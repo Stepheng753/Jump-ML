@@ -12,15 +12,15 @@ BAR_H = 30                    # status bar under the grid
 
 
 def resolve_size(n_cells: int, size: Optional[Sequence[int]] = None) -> Tuple[int, int]:
-    """(rows, cols) for n_cells games. No --size means one row: 1 x n."""
+    """(rows, cols) for n_cells games. No size given means one row: 1 x n."""
     if size is None:
         return 1, n_cells
     rows, cols = size
     if rows < 1 or cols < 1:
-        raise ValueError("--size needs two numbers that are at least 1, like --size 2 2")
+        raise ValueError("the grid needs two numbers that are at least 1, like 2 2")
     if rows * cols != n_cells:
-        raise ValueError(f"--size {rows} {cols} makes {rows * cols} cells, "
-                         f"but --multiple lists {n_cells} generations: they must match")
+        raise ValueError(f"a {rows} x {cols} grid makes {rows * cols} cells, "
+                         f"but there are {n_cells} to show: they must match")
     return rows, cols
 
 

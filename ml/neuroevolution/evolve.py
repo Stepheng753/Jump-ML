@@ -35,8 +35,8 @@ class Config:
             raise ValueError(f"elite must be between 0 and the population size ({self.pop_size})")
         # The elites are the top of the parent pool, so the pool can't be smaller than them.
         if self.n_parents < self.elite:
-            raise ValueError(f"--parents ({self.n_parents}) must be at least --elite ({self.elite}): "
-                             f"the elites are part of the parent pool. Raise --parents or lower --elite")
+            raise ValueError(f"parents ({self.n_parents}) must be at least elites ({self.elite}): "
+                             f"the elites are part of the parent pool. Raise the parents or lower the elites")
         if not 1 <= self.n_parents <= self.pop_size:
             raise ValueError(f"parents must be between 1 and the population size ({self.pop_size})")
 
@@ -55,6 +55,8 @@ def run_info(run_dir: str) -> Optional[RunInfo]:
     if not os.path.exists(path):
         return None
     state = np.load(path)
+    if "population" not in state.files:      # a DQN run's state, not an evolution one
+        return None
     pop = state["population"]
     # one hidden layer: genome = (inputs + 1) * h + (h + 1) * outputs, so solve for h
     hidden, leftover = divmod(pop.shape[1] - N_ACTIONS, OBS_SIZE + 1 + N_ACTIONS)
@@ -107,12 +109,14 @@ def train(cfg: Config, generations: int, run_dir: str, seed=None, save_every: in
 
     if os.path.exists(state_path):
         state = np.load(state_path)
+        if "population" not in state.files:
+            raise ValueError(f"{run_dir} was trained with DQN, not neuroevolution; use another run name (or delete it)")
         if seed is not None and seed != int(state["seed"]):
-            raise ValueError(f"{run_dir} was started with seed {int(state['seed'])}; use --reset or a new --run to change it")
+            raise ValueError(f"{run_dir} was started with seed {int(state['seed'])}; delete it or use a new run name to change it")
         seed, start = int(state["seed"]), int(state["generation"])
         population = list(state["population"])
         if len(population) != cfg.pop_size or len(population[0]) != genome_size(sizes):
-            raise ValueError(f"{run_dir} was started with a different --pop/--hidden; use --reset or a new --run")
+            raise ValueError(f"{run_dir} was started with a different population size or hidden neurons; delete it or use a new run name")
         log(f"resuming {run_dir} at generation {start}")
     else:
         seed, start = (0 if seed is None else seed), 0

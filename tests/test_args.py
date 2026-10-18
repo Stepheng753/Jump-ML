@@ -1,7 +1,7 @@
 import argparse
 
 import pytest
-from _args import non_negative_int, playback_speed, positive_int
+from _args import gamma_value, non_negative_int, playback_speed, positive_float, positive_int
 
 
 @pytest.mark.parametrize("bad", ["0", "-1", "-3", "2.5", "abc", ""])
@@ -26,3 +26,17 @@ def test_speed_rejects(bad):
 @pytest.mark.parametrize("good,expected", [("0.25", 0.25), ("1", 1.0), ("8", 8.0), ("20", 20.0), ("1000", 1000.0)])
 def test_speed_accepts(good, expected):
     assert playback_speed(good) == expected
+
+
+@pytest.mark.parametrize("bad", ["1", "1.0", "-0.1", "2", "nan", "inf", "abc"])
+def test_gamma_rejects(bad):
+    with pytest.raises(argparse.ArgumentTypeError):
+        gamma_value(bad)
+
+
+def test_gamma_and_positive_float_accept_valid_values():
+    assert gamma_value("0") == 0.0 and gamma_value("0.99") == 0.99
+    assert positive_float("0.001") == 0.001
+    for bad in ("0", "-1", "nan", "inf", "x"):
+        with pytest.raises(argparse.ArgumentTypeError):
+            positive_float(bad)

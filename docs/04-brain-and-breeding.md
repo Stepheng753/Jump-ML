@@ -88,7 +88,7 @@ So f(x) responds to the input: it waits, then jumps at about the right moment. A
 
 Two honest caveats:
 - *"Right" is never labelled.* Nobody tells the net the correct action for each input. The only feedback is the final score, and evolution keeps the numbers that score well. (The perfect bot is a hand-written rule that plays without mistakes in our tests, so it is a useful yardstick, but it isn't used to train.)
-- *"Every input" means every input that can occur in play.* There are only so many combinations of obstacle distance, speed and type. That is why we judge a net on **fresh seeds** (`scripts/watch.py` does by default): a net that only works on the 3 games it was picked on has not really learned f(x).
+- *"Every input" means every input that can occur in play.* There are only so many combinations of obstacle distance, speed and type. That is why we judge a net on **fresh seeds** (`ml/run/watch.py` does by default): a net that only works on the 3 games it was picked on has not really learned f(x).
 
 ---
 
@@ -98,10 +98,10 @@ After every individual has played, the 50 are ranked by fitness (their average s
 
 | Group | Who | What happens to them |
 | --- | --- | --- |
-| **Elites** | the top `--elite` individuals (default 5) | copied into the next generation **unchanged** |
-| **Parents** | the top `--parents` individuals (default 10) | allowed to **have children**. Includes the elites |
+| **Elites** | the top N individuals (default 5) | copied into the next generation **unchanged** |
+| **Parents** | the top N individuals (default 10) | allowed to **have children**. Includes the elites |
 
-Defaults: 50 slots in the next generation = 5 elite copies + 45 children. `--parents` must be at least `--elite`, because the elites are inside the parent pool.
+Defaults: 50 slots in the next generation = 5 elite copies + 45 children. The number of parents must be at least the number of elites, because the elites are inside the parent pool.
 
 ### Elites: copied as they are
 
@@ -168,4 +168,4 @@ flowchart LR
     D -->|"next generation"| A
 ```
 
-Run it with `scripts/train.py`, watch it with `scripts/watch.py`. All the knobs (`--pop`, `--elite`, `--parents`, `--hidden`, `--games`, `--seed`) are in `docs/03-neuroevolution.md`.
+Run it with `ml/run/train.py`, watch it with `ml/run/watch.py`. All the settings (population, elites, parents, hidden neurons, games, seed) are in `docs/03-neuroevolution.md`.

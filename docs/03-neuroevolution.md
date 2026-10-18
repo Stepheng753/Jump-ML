@@ -33,71 +33,66 @@ Generation 0 is just the random population.
 
 ## Run it
 
-`--generations N` means "run N **more** generations". The whole population is saved to `runs/<run>/state.npz` after every call, so the next call carries on from there.
-
 ```bash
-scripts/train.py --generations 1 --verbose    # one generation, shows every bot's fitness
-scripts/train.py --generations 10             # 10 more
-scripts/train.py --generations 50 --reset     # delete the run and start over
+ml/run/train.py
 ```
 
-Or let it ask you for each setting: `scripts/train.py -i` (generations default to 100). It prints the equivalent command before starting.
+It asks which kind of training; choose **1, neuroevolution**. Press Enter to accept a default in `[brackets]`. Then:
 
-Output goes to `runs/default/` (change with `--run NAME`):
+| Question | Default | Meaning |
+| --- | --- | --- |
+| Run name | `default` | the folder under `runs/` that holds the results |
+| How many generations to train | 100 | generations to run now. On an existing run it means that many **more** |
+| Population size | 50 | individuals per generation |
+| Hidden neurons | 12 | size of each network's hidden layer |
+| Elites | 5 | the top N are copied unchanged into the next generation |
+| Parents | 10 | the top N are allowed to have children. Must be at least the elites (the elites are part of the parent pool); it will not accept less |
+| Games each individual plays | 3 | per generation |
+| Save every N generations | 5 | how often a whole generation is written to disk |
+| Random seed | 0 | new runs only. The same seed and settings give the same run |
+| Print every individual's fitness | no | one line per individual, per generation: useful for looking closely at 1 or 2 generations |
+
+Then it shows your settings and asks `Start? [Y/n]`.
+
+If the run name already exists it says how much it has trained and asks whether to **delete it and start over** (the default; it warns what will be deleted) or, if you answer `n`, **carry on** from where it stopped. When carrying on, the population size, hidden neurons and seed are fixed by the run, so it doesn't ask for them. Each run belongs to one kind of training: it will not reuse a name that a DQN run is using.
+
+To look closely at one generation at a time, train 1 generation with "Print every individual's fitness" on, then run it again and answer `n` to the start-over question to add more.
+
+Output goes to `runs/<run name>/`:
 
 | File | Contents |
 | --- | --- |
 | `history.csv` | best and mean fitness per generation |
-| `gen_XXXX.npz` | one **whole generation**: all 50 individuals ranked best-first (50 × 171 numbers), their fitness, and the 3 game seeds they played. Saved every `--save-every` generations (default 5: gens 0, 5, 10, ...) and after the last generation of each call |
-| `state.npz` | the population waiting to play the next generation (this is what lets training resume) |
+| `gen_XXXX.npz` | one **whole generation**: all 50 individuals ranked best-first (50 × 171 numbers), their fitness, and the 3 game seeds they played. Saved every N generations (default 5: gens 0, 5, 10, ...) and after the last generation of each run |
+| `state.npz` | the population waiting to play the next generation (this is what lets training carry on) |
 
-One individual is **171 numbers** (its weights and biases). A `gen_XXXX.npz` holds 50 of them.
+One individual is **171 numbers** (its weights and biases). A `gen_XXXX.npz` holds 50 of them. The other (population − elites) slots in each generation are children.
 
-Other options: `--pop`, `--hidden`, `--games`, `--seed` (new runs only), and the breeding settings:
-
-| Option | Default | Meaning |
-| --- | --- | --- |
-| `--elite N` | 5 | the top N individuals are copied unchanged into the next generation |
-| `--parents N` | 10 | the top N individuals are allowed to have children. Must be at least `--elite` (the elites are part of the parent pool), otherwise training refuses to start |
-
-The other `--pop - --elite` slots in each generation are children.
-
-Then watch bots play in the real window:
+## Watch it
 
 ```bash
-scripts/watch.py --brain perfect
-scripts/watch.py --brain runs/default/gen_0005.npz
-scripts/watch.py --brain runs/default                  # latest saved generation
-scripts/watch.py --brain runs/default --rank 3         # that generation's 3rd best individual
-scripts/watch.py --brain runs/default --speed 8        # faster playback (any number, e.g. 20)
+ml/run/watch.py
 ```
 
-By default every game uses a **fresh random seed**, so you see how well the individual really plays, not how it did on the 3 games it was picked for. The top of the window shows `gen 40 | individual #1 | train fit 17.3 | game 2 | seed 481516916 | 1x`; the `train fit` is its score on *other* games, so it won't match. Options:
+It asks what to watch; pick the run. Wherever it asks for a generation, it first lists every saved one with its **best** score (the generation's best individual's training fitness). Then you choose:
 
-```bash
-scripts/watch.py --brain runs/default --seed 123      # one specific obstacle sequence
-scripts/watch.py --brain runs/default --replay        # the 3 games it was scored on in training
-```
+- **Which generation**, or latest, and **which individual** of it (1 = best, 2 = second best, ...).
+- **New random games** (the default) or **replay** the exact games it was scored on. By default every game uses a fresh random seed, so you see how well the individual really plays, not how it did on the 3 games it was picked for. You can also choose a specific game seed.
+- **Playback speed**: any number above 0 (for example 0.5, 2, 8, 20).
 
-`--replay` shows `fitness 17.3 | game 2/3 | seed 4002` and reproduces the saved fitness exactly. Files saved before seeds were recorded can't be replayed.
+The top of the window shows `gen 40 | individual #1 | train fit 17.3 | game 2 | seed 481516916 | 1x`. The `train fit` is its score on *other* games, so it won't match. With replay it shows `fitness 17.3 | game 2/3 | seed 4002` and reproduces the saved fitness exactly. Files saved before seeds were recorded can't be replayed.
 
 Keys: `P` pause, `N` one frame while paused, `[` and `]` slower/faster, `SPACE` skip to the next game, `Esc` quit. The ground strip shows the net's three output scores and which one won.
 
-`scripts/watch.py -i` asks what to watch step by step, in the same way.
-
 ### Comparing generations side by side
 
-```bash
-scripts/watch.py --brain runs/default --multiple 0 25 50 95                  # 1 row of 4
-scripts/watch.py --brain runs/default --multiple 0 25 50 95 --size 2 2       # 2 rows x 2 columns
-scripts/watch.py --brain runs/default --multiple 0 25 50 95 --size 4 1       # 4 rows x 1 column
-```
+Choose "several side by side" and type the generations, such as `0 25 50 95`, then the grid shape (rows and columns).
 
-- **Same game for everyone.** Every cell plays the same obstacles (a shared fresh seed), so any difference is the brain, not luck. When all cells have crashed, the next round starts with a new shared seed. Pass `--seed N` to choose it.
+- **Same game for everyone.** Every cell plays the same obstacles (a shared fresh seed, or one you choose), so any difference is the brain, not luck. When all cells have crashed, the next round starts with a new shared seed.
 - **Generation order.** Cells run left to right, then top to bottom: the earliest generation is top-left and the latest is bottom-right, whatever order you typed them in. Compare the `fit` numbers to see whether later really is better; it isn't always.
-- **What a cell shows.** `gen 25 | #1 | fit 17.3` is the generation, the individual's rank in it (`--rank` applies to every cell), and its training fitness. The big number is its live score this round, and the cell with the top live score gets a green border. `fit` is from training games, so it won't match a single round's score.
-- **`--size ROWS COLS`.** `ROWS x COLS` must equal the number of generations, otherwise it stops with an error. With no `--size` you get one row.
-- **Only saved generations work.** Training saves every `--save-every` generations (default 5), so asking for generation 1 fails and lists what exists. Train with `--save-every 1` to be able to show any generation.
+- **What a cell shows.** `gen 25 | #1 | fit 17.3` is the generation, the individual's rank in it, and its training fitness. The big number is its live score this round, and the cell with the top live score gets a green border. `fit` is from training games, so it won't match a single round's score.
+- **The grid shape** must make exactly as many cells as generations, otherwise it asks again. The default is one row.
+- **Only saved generations can be chosen.** Training saves every N generations (default 5), so generation 1 isn't offered unless you save every generation.
 - No sound in the grid, and the keys are the same (`SPACE` skips to the next round).
 
 ## What we saw (an earlier 100-generation run, seed 0; its files have since been deleted)
@@ -121,6 +116,6 @@ Notice the jump between generations 50 and 60. Evolution is not smooth: it plate
 - **"Best" in the training log is noisy.** It is the top of 50 bots, each judged on only 3 games, so some of that number is luck. That is why we re-test champions on unseen seeds.
 - **A score of ~120 is the ceiling here**, because each game is capped at one minute and the perfect bot hits it too. To measure "plays indefinitely" we need longer games and harder levels (a later step).
 - **Why the net looks idle during a jump.** Once a jump or duck starts, the engine ignores new actions until it finishes, so the net's scores don't matter mid-air.
-- **Experiments to try:** `--hidden 8` vs `--hidden 24`, `--pop 100`, a different `--seed`. Compare the `history.csv` curves.
+- **Experiments to try:** 8 vs 24 hidden neurons, a population of 100, a different seed. Compare the `history.csv` curves.
 
 For diagrams of the network and the breeding step, and a worked example with real numbers, see `docs/04-brain-and-breeding.md`.

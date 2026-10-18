@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Play the game yourself.
+"""Play the game yourself. (It takes no arguments: just run it.)
 
 Keys: W / Up = jump (orange obstacles), S / Down = duck (blue obstacles),
 SPACE = restart after a crash, Esc = quit.

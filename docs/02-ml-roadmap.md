@@ -43,7 +43,7 @@ Instead of a population, **one** network learns *during* play:
 - It learns to predict "how much total future score will I get if I take this action now?" (the **Q-value**) and picks the best.
 - It sometimes tries random actions (**exploration**) so it can discover better moves.
 
-This is the standard way modern game AIs learn. We then compare its learning curve with Round 1.
+This is the standard way modern game AIs learn. **Built:** see `docs/05-reinforcement-learning.md`; `ml/run/train.py` can run it.
 
 ### Round 3: Adding an LLM
 An LLM like Claude is far too slow to choose an action 60 times a second, and it is the wrong tool for reflexes. It is good at **thinking about the training**, so we give it two jobs:
@@ -56,7 +56,7 @@ We can then compare all three approaches on the same seeds.
 Once a bot is good, we make the game harder over time (**curriculum**: wider speed range, tighter gaps) and measure survival across many random seeds. A bot that survives 10+ minutes on 100 different seeds counts as "indefinitely" for our purposes. Saved checkpoints let us stop and continue training any time.
 
 ## 5. Where data lives
-No database. Small files in `runs/<run name>/`: `gen_XXXX.npz` (a saved champion's weights, every 10 generations), `history.csv` (best and average score per generation), and later RL checkpoints.
+No database. Small files in `runs/<run name>/`: `gen_XXXX.npz` (a saved generation or checkpoint), `history.csv` (the learning curve), `state.npz` (to resume), and for DQN runs `best.npz`.
 
 ## 6. Why the engine is separate from the window
 Training plays millions of frames. The engine runs about 200,000 steps/second because it never draws or plays sound. The pygame window is only used to *watch* a trained bot.

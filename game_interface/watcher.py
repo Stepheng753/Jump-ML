@@ -12,6 +12,7 @@ from game_engine import Game
 from game_engine import config as C
 
 from .grid import BAR_H, layout
+from .labels import cell_label, game_label, title_unit
 from .renderer import AIR_OBS, BEST, GROUND_OBS, HEIGHT, SKY, TEXT, Renderer
 from .sound import Sounds
 
@@ -44,7 +45,7 @@ def _fresh_seed():
 def watch(brain, seed=None, speed: float = 1.0, replay: bool = False):
     """One brain, full-size window.
 
-    Plays fresh games by default (a random seed, or --seed). With replay=True it
+    Plays fresh games by default (a random seed, or one you chose). With replay=True it
     plays the exact games the individual was scored on in training instead.
     """
     pygame.init()
@@ -60,12 +61,8 @@ def watch(brain, seed=None, speed: float = 1.0, replay: bool = False):
         return saved_seeds[n % len(saved_seeds)] if saved_seeds else base_seed + n
 
     def label(n):
-        if saved_seeds:   # the games it was scored on, so the fitness matches what you see
-            return (f"gen {brain.generation} | individual #{brain.rank} | fitness {brain.fitness:.1f}"
-                    f" | game {n % len(saved_seeds) + 1}/{len(saved_seeds)} | seed {seed_of(n)}")
-        who = (f"gen {brain.generation} | individual #{brain.rank} | train fit {brain.fitness:.1f}"
-               if brain.generation is not None else brain.name)
-        return f"{who} | game {n + 1} | seed {seed_of(n)}"
+        return game_label(brain, n, seed_of(n), replaying=bool(saved_seeds),
+                          n_games=len(saved_seeds) if saved_seeds else None)
 
     game_no = 0
     game = Game(seed_of(game_no))
@@ -121,7 +118,7 @@ def watch(brain, seed=None, speed: float = 1.0, replay: bool = False):
     pygame.quit()
 
 
-def watch_grid(brains, rows: int, cols: int, seed=None, speed: float = 1.0):
+def watch_grid(brains, rows: int, cols: int, seed=None, speed: float = 1.0, caption=None):
     """Several brains side by side, all playing the SAME obstacles.
 
     `brains` must already be in the order to show them: cell 1 (top-left) first,
@@ -135,8 +132,10 @@ def watch_grid(brains, rows: int, cols: int, seed=None, speed: float = 1.0):
     pygame.init()
     lay = layout(rows, cols)
     screen = pygame.display.set_mode((lay.win_w, lay.win_h))
-    gens = ", ".join(str(b.generation) for b in brains)
-    pygame.display.set_caption(f"Jump-ML: generations {gens}")
+    if caption is None:
+        gens = ", ".join(str(getattr(b, "generation", "")) for b in brains)
+        caption = f"Jump-ML: {title_unit(brains)} {gens}"
+    pygame.display.set_caption(caption)
     clock = pygame.time.Clock()
 
     world = pygame.Surface((C.WORLD_W, HEIGHT))
@@ -201,7 +200,7 @@ def watch_grid(brains, rows: int, cols: int, seed=None, speed: float = 1.0):
                 screen.blit(crashed, (x, y))
                 msg = score_font.render("crashed", True, TEXT)
                 screen.blit(msg, msg.get_rect(center=(x + lay.cell_w // 2, y + lay.cell_h // 2 - 8)))
-            tag = label_font.render(f"gen {brain.generation} | #{brain.rank} | fit {brain.fitness:.1f}", True, TEXT)
+            tag = label_font.render(cell_label(brain), True, TEXT)
             screen.blit(tag, (x + 8, y + 6))
             pts = score_font.render(str(game.score), True, TEXT)
             screen.blit(pts, (x + lay.cell_w - pts.get_width() - 10, y + 4))

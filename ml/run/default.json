@@ -1,0 +1,108 @@
+{
+  "_note": "Saved answers for ml/run/train.py (the 'train' section) and ml/run/watch.py (the 'watch' section). Run either script and choose 'Use the settings saved in default.json'. Edit the values and run again. Details: ml/run/README.md",
+  "train": {
+    "_note": "The kind of training (neuroevolution or DQN) is chosen when train.py runs; only that kind's section is used. existing_run: 'continue' adds to a run that already exists, 'start_over' deletes it first (you still get a summary and a Start? question). When continuing, population/hidden/memory_size must match the run, and seed is ignored.",
+    "evolution": {
+      "run": "evolution",
+      "existing_run": "start_over",
+      "generations": 100,
+      "population": 50,
+      "elites": 5,
+      "parents": 10,
+      "hidden": 12,
+      "games_per_individual": 3,
+      "save_every": 5,
+      "seed": 0,
+      "verbose": false
+    },
+    "dqn": {
+      "run": "dqn",
+      "existing_run": "start_over",
+      "rounds": 100,
+      "training_games_per_round": 10,
+      "hidden": 128,
+      "save_every": 5,
+      "seed": 0,
+      "gamma": 0.99,
+      "learning_rate": 0.001,
+      "batch_size": 64,
+      "memory_size": 100000,
+      "train_every": 4,
+      "target_sync": 4000,
+      "exploration_steps": 50000,
+      "test_games_per_round": 3
+    }
+  },
+  "watch": {
+    "_note": "Saved answers for ml/run/watch.py. You choose the type of watching (single, single_vs, multiple, multiple_vs) and, for single and multiple, evolution or DQN when the script runs; this file never decides that. Each kind has its own 'evolution' / 'dqn' sub-section with its run. A checkpoint is 'latest', 'best' (DQN runs only) or a saved generation/round number. seed null = new random obstacles. rows/cols null = the default shape.",
+    "speed": 1,
+    "seed": null,
+    "single": {
+      "_note": "Used when you choose single and then evolution or DQN. (The perfect bot needs no settings.)",
+      "evolution": {
+        "run": "evolution",
+        "checkpoint": "latest"
+      },
+      "dqn": {
+        "run": "dqn",
+        "checkpoint": "best"
+      },
+      "individual": 1,
+      "replay": false
+    },
+    "single_vs": {
+      "_note": "left is an evolution player, right is a DQN player; each side is a run and a checkpoint",
+      "evolution": {
+        "run": "evolution",
+        "checkpoint": "latest"
+      },
+      "dqn": {
+        "run": "dqn",
+        "checkpoint": "best"
+      }
+    },
+    "multiple": {
+      "_note": "Used when you choose multiple and then evolution or DQN. generations: the saved generations/rounds to show. Besides numbers you can write \"latest\" (the highest saved number) for either kind, and \"best\" (the best checkpoint) for a DQN run. Numbers are shown earliest first (top-left); \"best\" always comes last.",
+      "evolution": {
+        "run": "evolution",
+        "generations": [
+          0,
+          50,
+          "latest"
+        ]
+      },
+      "dqn": {
+        "run": "dqn",
+        "generations": [
+          0,
+          99,
+          "best"
+        ]
+      },
+      "individual": 1,
+      "rows": null,
+      "cols": null
+    },
+    "multiple_vs": {
+      "_note": "left is evolution generations, right is DQN rounds (use 'best' for a DQN run's best checkpoint). Both lists need the same length: each row pairs one of each. Cols is always 2. rows null = one per pair",
+      "evolution": {
+        "run": "evolution",
+        "generations": [
+          0,
+          50,
+          "latest"
+        ]
+      },
+      "dqn": {
+        "run": "dqn",
+        "generations": [
+          0,
+          99,
+          "best"
+        ]
+      },
+      "rows": 3,
+      "cols": 2
+    }
+  }
+}

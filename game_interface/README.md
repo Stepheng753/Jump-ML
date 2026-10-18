@@ -2,7 +2,7 @@
 
 Everything you can see, hear, or press. It is a thin skin over `game_engine`: it asks the engine to step and draws the result. The engine knows nothing about this folder.
 
-You normally start it through the launchers in `scripts/` (`scripts/play.py`, `scripts/watch.py`), not directly.
+You normally start it through the launchers in `scripts/` (`scripts/play.py`, `ml/run/watch.py`), not directly.
 
 ## Files
 
@@ -12,6 +12,8 @@ You normally start it through the launchers in `scripts/` (`scripts/play.py`, `s
 | `watcher.py` | watches a **brain** play. `watch()` shows one brain full size; `watch_grid()` shows several side by side, all playing the same obstacles |
 | `renderer.py` | `Renderer`: `draw_world` (field only), `draw` (field plus score and controls), `draw_status` (label line), `draw_brain_panel` (the net's 3 output scores) |
 | `sound.py` | jump (rising) and duck (falling) tones generated with numpy, so no audio files. If there is no audio device it runs silently and prints one warning |
+| `plan.py` | carries out the watch plan that the `ml/run/watch.py` questions produce: `build_watch` loads the players (no pygame), `launch` opens the window |
+| `labels.py` | the label text for the windows (pure, no pygame): generation or round, fitness or eval score, game number, seed |
 | `grid.py` | layout maths for the grid view: `resolve_size`, `by_generation`, `layout`. **Pure functions with no pygame import**, so they can be tested and validated before any window opens |
 
 ## What a brain is
@@ -29,7 +31,7 @@ A brain's `act()` result goes into the same `Game.step()` your keypress does. No
 
 ## Keys in the watcher
 
-`P` pause, `N` one frame while paused, `[` and `]` slower/faster, `SPACE` skip to the next game (next round in the grid), `Esc` quit. Speeds above 1x run several game steps per drawn frame, so `--speed 20` works.
+`P` pause, `N` one frame while paused, `[` and `]` slower/faster, `SPACE` skip to the next game (next round in the grid), `Esc` quit. Speeds above 1x run several game steps per drawn frame, so a playback speed of 20 works.
 
 ## Window sizes
 
